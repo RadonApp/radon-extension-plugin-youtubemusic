@@ -1,0 +1,11 @@
+/.modules
+/.phantomjs
+/Build
+/node_modules
+
+/npm-debug.log*
+/TAG_MESSAGE
+
+*.iml
+*.log
+*.tgz

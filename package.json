@@ -1,0 +1,70 @@
+{
+  "name": "neon-extension-source-youtubemusic",
+  "version": "2.0.1",
+  "description": "Radon Extension: YouTube Music",
+  "keywords": [
+    "neon",
+    "neon-extension",
+    "youtube",
+    "music"
+  ],
+  "homepage": "https://github.com/NeApp/neon-extension",
+  "author": "Dean Gardiner <me@dgardiner.net>",
+  "license": "GPL-3.0",
+  "main": "./src",
+  "bugs": {
+    "url": "https://github.com/NeApp/neon-extension/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeApp/neon-extension-source-youtubemusic"
+  },
+  "dependencies": {
+    "eventemitter3": "^2.0.0",
+    "lodash-es": "^4.16.1",
+    "memory-cache": "^0.2.0",
+    "urijs": "^1.19.1",
+    "wes": "^1.1.0-beta.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0-beta.49",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.49",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.49",
+    "@babel/polyfill": "^7.0.0-beta.49",
+    "@babel/preset-env": "^7.0.0-beta.49",
+    "@babel/preset-react": "^7.0.0-beta.49",
+    "@fuzeman/eslint-plugin-import": "^2.12.0-fuzeman.1",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^7.2.3",
+    "babel-loader": "^8.0.0-beta.3",
+    "babel-plugin-istanbul": "^4.1.5",
+    "eslint": "^4.19.1",
+    "eslint-loader": "^1.9.0",
+    "eslint-plugin-babel": "^4.1.2",
+    "eslint-plugin-jasmine": "^2.10.1",
+    "eslint-plugin-react": "^7.9.1",
+    "file-loader": "^1.1.11",
+    "jasmine": "^2.8.0",
+    "jasmine-promises": "^0.4.1",
+    "karma": "^2.0.2",
+    "karma-coverage": "^1.1.1",
+    "karma-html-reporter": "^0.2.7",
+    "karma-jasmine": "^1.1.0",
+    "karma-jasmine-html-reporter": "^0.2.2",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-spec-reporter": "^0.0.31",
+    "karma-webpack": "^2.0.6",
+    "react": "^15.3.0",
+    "webpack": "^3.12.0",
+    "whatwg-fetch": "^2.0.4"
+  },
+  "peerDependencies": {
+    "neon-extension-framework": "^2.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "karma start --single-run --browsers PhantomJS_D2",
+    "test-watch": "karma start --browsers PhantomJS_D2 --auto-watch"
+  }
+}

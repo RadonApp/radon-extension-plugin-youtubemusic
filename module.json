@@ -1,0 +1,40 @@
+{
+  "title": "YouTube Music",
+
+  "content_scripts": [
+    {
+      "id": "main",
+
+      "conditions": [
+        { "pageUrl": { "hostEquals": "music.youtube.com" } }
+      ],
+
+      "matches": [
+        "*://music.youtube.com/*"
+      ],
+
+      "js": [
+        "Common.js",
+        "Modules/Common.js",
+        "Modules/neon-extension-source-youtubemusic/Main.js"
+      ]
+    }
+  ],
+  "origins": [
+    "*://music.youtube.com/*"
+  ],
+
+  "services": [
+    "Configuration",
+    "Source:Activity"
+  ],
+  "web_accessible_resources": [
+    "Modules/neon-extension-source-youtubemusic/Shim.js"
+  ],
+
+  "webpack": {
+    "modules": {
+      "Shim": { "entry": true }
+    }
+  }
+}
