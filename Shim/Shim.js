@@ -66,6 +66,7 @@ export default class Shim {
         // Wait for player to load
         awaitPlayer().then((player) => {
             this._player = player;
+
             // Emit initial state
             this._emit('player.state', player.getPlayerState());
 

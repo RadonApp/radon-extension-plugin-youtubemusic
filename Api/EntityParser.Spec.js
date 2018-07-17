@@ -59,7 +59,7 @@ describe('EntityParser', () => {
 
                         'albumRelease': 'ALBUM_RELEASE',
                         'userDetails': 'TRACK_USER_DETAIL',
-                        'details': 'TRACK_DETAIL',
+                        'details': 'TRACK_DETAIL'
                     }
                 },
                 {
