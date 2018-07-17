@@ -1,6 +1,5 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
-import Merge from 'lodash-es/merge';
 import Runtime from 'wes/runtime';
 
 import {awaitBody} from 'neon-extension-framework/Document/Await';
@@ -52,7 +51,7 @@ export class YouTubeMusicShimEvents extends EventEmitter {
             return;
         }
 
-        Log.trace('Received event: %o', event);
+        Log.trace('Received "%s" event', event.type);
 
         // Emit event
         this.emit(event.type, ...event.args);
@@ -68,6 +67,10 @@ export class YouTubeMusicShim extends EventEmitter {
 
         this._injected = false;
         this._injecting = null;
+    }
+
+    get events() {
+        return this._events;
     }
 
     get injected() {
@@ -95,6 +98,12 @@ export class YouTubeMusicShim extends EventEmitter {
     configuration() {
         return this.inject().then(() =>
             this._request('configuration')
+        );
+    }
+
+    state() {
+        return this.inject().then(() =>
+            this._request('state')
         );
     }
 

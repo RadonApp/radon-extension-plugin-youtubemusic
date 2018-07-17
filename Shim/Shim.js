@@ -2,6 +2,8 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
+import {awaitPlayer} from '../Core/Helpers';
+
 
 export class ShimRequests extends EventEmitter {
     constructor() {
@@ -53,9 +55,25 @@ export default class Shim {
     constructor() {
         this.requests = new ShimRequests();
         this.requests.on('configuration', () => this.configuration());
+        this.requests.on('state', () => this.state());
+
+        // Private attributes
+        this._player = null;
 
         // Emit "configuration" event
         this.configuration();
+
+        // Wait for player to load
+        awaitPlayer().then((player) => {
+            this._player = player;
+            // Emit initial state
+            this._emit('player.state', player.getPlayerState());
+
+            // Emit player changes
+            player.addEventListener('onStateChange', (state) =>
+                this._emit('player.state', state)
+            );
+        });
     }
 
     configuration() {
@@ -65,6 +83,18 @@ export default class Shim {
 
         // Emit event
         this._emit('configuration', window['yt'].config_);
+    }
+
+    state() {
+        // Emit event
+        this._emit('state', {
+            player: this._player && {
+                duration: this._player.getDuration(),
+                state: this._player.getPlayerState(),
+                time: this._player.getCurrentTime(),
+                url: this._player.getVideoUrl()
+            }
+        });
     }
 
     // region Private methods

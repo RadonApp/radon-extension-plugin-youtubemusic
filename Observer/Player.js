@@ -1,8 +1,11 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Debounce from 'lodash-es/debounce';
+import ForEach from 'lodash-es/forEach';
 import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
+import URI from 'urijs';
 
+import ShimApi from '../Api/Shim';
 import Log from '../Core/Logger';
 import Observer from './Base';
 import {getIdentifier} from '../Core/Helpers';
@@ -13,14 +16,12 @@ export class PlayerObserver extends Observer {
         super();
 
         // Create debounced `onTrackChanged` function
-        this.onTrackChanged = Debounce(this._onTrackChanged, 5000);
+        this.onTrackChanged = Debounce(this._onTrackChanged.bind(this), 5 * 1000);
 
+        // Observers
         this.body = null;
 
         this.playerBar = null;
-
-        this.progressBar = null;
-        this.sliderBar = null;
 
         this.wrapper = null;
         this.controls = null;
@@ -35,6 +36,8 @@ export class PlayerObserver extends Observer {
 
         // Private attributes
         this._currentTrack = null;
+        this._currentVideo = null;
+        this._progressEmitterEnabled = false;
         this._queueCreated = false;
     }
 
@@ -44,13 +47,7 @@ export class PlayerObserver extends Observer {
 
         // Observe player bar
         this.playerBar = this.observe(this.body, 'ytmusic-player-bar', { attributes: ['player-ui-state_'] })
-            .onAttributeChanged('player-ui-state_', this.onPlayerStateChanged.bind(this));
-
-        // Observe progress bar
-        this.progressBar = this.observe(this.playerBar, '#progress-bar');
-
-        this.sliderBar = this.observe(this.progressBar, '#sliderBar', { attributes: ['value'] })
-            .onAttributeChanged('value', this.onProgressChanged.bind(this));
+            .onAttributeChanged('player-ui-state_', this.onPlayerVisibilityChanged.bind(this));
 
         // Observe controls
         this.wrapper = this.observe(this.playerBar, '.control-wrapper');
@@ -67,11 +64,34 @@ export class PlayerObserver extends Observer {
 
         this.bylines = this.observe(this.byline, 'a', { text: true })
             .on('mutation', this.onTrackChanged.bind(this));
+
+        // Bind to state changed event
+        ShimApi.events.on('player.state', this.onPlayerStateChanged.bind(this));
     }
 
     // region Event Handlers
 
-    onPlayerStateChanged() {
+    onPlayerStateChanged(state) {
+        Log.trace('Player state changed to %s', state);
+
+        if(state === 1) {
+            // Start progress emitter
+            this._startProgressEmitter();
+            return;
+        }
+
+        // Stop progress emitter
+        this._stopProgressEmitter();
+
+        // Emit events
+        if(state === 2) {
+            this.emit('track.paused');
+        } else {
+            this.emit('track.stopped');
+        }
+    }
+
+    onPlayerVisibilityChanged() {
         let node = this.playerBar.first();
 
         // Update queue state
@@ -80,24 +100,6 @@ export class PlayerObserver extends Observer {
         } else {
             this._onQueueDestroyed();
         }
-    }
-
-    onProgressChanged() {
-        let node = this.sliderBar.first();
-
-        if(IsNil(node)) {
-            return;
-        }
-
-        // Retrieve position
-        let position = node.getAttribute('value') || null;
-
-        if(IsNil(position)) {
-            return;
-        }
-
-        // Emit event
-        this.emit('position.changed', position);
     }
 
     _onQueueCreated() {
@@ -153,29 +155,44 @@ export class PlayerObserver extends Observer {
     // region Private Methods
 
     _createTrack($title, $bylines) {
-        if($bylines.length < 2) {
-            return null;
-        }
-
-        // Retrieve title
         let title = this._getText($title);
 
-        if(IsNil(title)) {
+        if(IsNil(title) || IsNil(this._currentVideo)) {
             return null;
         }
 
         // Create children
-        let album = this._createAlbum($bylines[$bylines.length - 1]);
-        let artist = this._createArtist($bylines[0]);
+        let album = null;
+        let artist = null;
 
-        if(IsNil(album) || IsNil(artist)) {
+        ForEach($bylines, ($byline) => {
+            let href = $byline.href;
+
+            // Album
+            if(href.indexOf('album/ALBUM_RELEASE/') > 0) {
+                album = album || this._createAlbum($byline);
+                return;
+            }
+
+            // Artist
+            if(href.indexOf('browse/') > 0) {
+                artist = artist || this._createArtist($byline);
+                return;
+            }
+        });
+
+        if(IsNil(artist)) {
             return null;
         }
 
         // Create track
         return {
+            ...this._currentVideo,
+
+            // Metadata
             title,
 
+            // Children
             album,
             artist
         };
@@ -221,6 +238,79 @@ export class PlayerObserver extends Observer {
         }
 
         return value;
+    }
+
+    _getVideoDetails(player) {
+        let url = new URI(player.url);
+
+        // Retrieve parameters
+        let params = url.search(true);
+
+        if(IsNil(params.v)) {
+            return null;
+        }
+
+        // Build video details
+        return {
+            duration: Math.ceil(player.duration * 1000),
+            id: params.v
+        };
+    }
+
+    _startProgressEmitter() {
+        if(this._progressEmitterEnabled) {
+            return;
+        }
+
+        // Reset state
+        this._currentVideo = null;
+
+        // Enable progress emitter
+        this._progressEmitterEnabled = true;
+
+        // Construct read method
+        let get = () => {
+            if(!this._progressEmitterEnabled) {
+                Log.debug('Stopped progress emitter');
+                return;
+            }
+
+            // Retrieve state
+            ShimApi.state().then(({ player }) => {
+                Log.debug('Received player state:', player);
+
+                // Retrieve video details
+                let video = this._getVideoDetails(player);
+
+                if(IsNil(video)) {
+                    Log.debug('Unable to retrieve video details (player: %o)', player);
+                    return;
+                }
+
+                // Update video details (if changed)
+                if(!IsEqual(this._currentVideo, video)) {
+                    // Store video details
+                    this._currentVideo = video;
+
+                    // Fire track changed
+                    this.onTrackChanged();
+                } else {
+                    // Emit "progress" event
+                    this.emit('track.progress', player.time * 1000);
+                }
+
+                // Queue next event
+                setTimeout(get, 5 * 1000);
+            });
+        };
+
+        // Start reading track progress
+        Log.debug('Started progress emitter');
+        get();
+    }
+
+    _stopProgressEmitter() {
+        this._progressEmitterEnabled = false;
     }
 
     // endregion

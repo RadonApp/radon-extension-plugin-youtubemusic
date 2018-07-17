@@ -1,7 +1,6 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
-import Merge from 'lodash-es/merge';
 
 import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
 
@@ -11,27 +10,19 @@ import PlayerObserver from '../Observer/Player';
 
 
 export default class PlayerMonitor extends EventEmitter {
-    constructor(options) {
+    constructor() {
         super();
-
-        // Parse options
-        this.options = Merge({
-            progressInterval: 5000
-        }, options);
 
         // Private attributes
         this._currentItem = null;
-        this._currentPosition = 0;
-
-        this._progressEmitterEnabled = false;
 
         // Bind to player events
-        PlayerObserver.on('position.changed', this.onPositionChanged.bind(this));
-
-        PlayerObserver.on('queue.created',   this.onQueueCreated.bind(this));
         PlayerObserver.on('queue.destroyed', this.onQueueDestroyed.bind(this));
 
         PlayerObserver.on('track.changed',   this.onTrackChanged.bind(this));
+        PlayerObserver.on('track.paused',    () => this.emit('paused'));
+        PlayerObserver.on('track.progress',  (time) => this.emit('progress', time));
+        PlayerObserver.on('track.stopped',   () => this.emit('stopped'));
     }
 
     start() {
@@ -73,25 +64,8 @@ export default class PlayerMonitor extends EventEmitter {
         this.emit('created', track);
     }
 
-    onPositionChanged(position) {
-        Log.trace('PlayerMonitor.onPositionChanged', position);
-
-        // Update position
-        this._currentPosition = position;
-    }
-
-    onQueueCreated() {
-        Log.trace('PlayerMonitor.onQueueCreated');
-
-        // Start progress emitter
-        this._startProgressEmitter();
-    }
-
     onQueueDestroyed() {
         Log.trace('PlayerMonitor.onQueueDestroyed');
-
-        // Stop progress emitter
-        this._progressEmitterEnabled = false;
 
         // Emit "stopped" event
         this.emit('stopped');
@@ -101,18 +75,39 @@ export default class PlayerMonitor extends EventEmitter {
 
     // region Private methods
 
-    _createTrack({ title, artist, album }) {
-        if(IsNil(title) || IsNil(artist.title)) {
+    _createTrack({ id, title, duration, artist, album }) {
+        if(IsNil(id)) {
+            Log.warn('Unable to create track (no "id" defined)');
+            return null;
+        }
+
+        if(IsNil(title)) {
+            Log.warn('Unable to create track (no "title" defined)');
+            return null;
+        }
+
+        if(IsNil(duration)) {
+            Log.warn('Unable to create track (no "duration" defined)');
+            return null;
+        }
+
+        if(IsNil(artist) || IsNil(artist.title)) {
+            Log.warn('Unable to create track (no "artist" defined)');
             return null;
         }
 
         // Create track
         return Track.create(Plugin.id, {
+            keys: {
+                id
+            },
+
             // Metadata
+            duration: duration,
             title,
 
             // Children
-            album: this._createAlbum(album),
+            album: album && this._createAlbum(album),
             artist: this._createArtist(artist)
         });
     }
@@ -149,32 +144,6 @@ export default class PlayerMonitor extends EventEmitter {
             // Metadata
             title
         });
-    }
-
-    _startProgressEmitter() {
-        if(this._progressEmitterEnabled) {
-            return;
-        }
-
-        this._progressEmitterEnabled = true;
-
-        // Construct read method
-        let get = () => {
-            if(!this._progressEmitterEnabled) {
-                Log.debug('Stopped progress emitter');
-                return;
-            }
-
-            // Emit "progress" event
-            this.emit('progress', this._currentPosition * 1000);
-
-            // Queue next event
-            setTimeout(get, this.options.progressInterval);
-        };
-
-        // Start reading track progress
-        Log.debug('Started progress emitter');
-        get();
     }
 
     // endregion

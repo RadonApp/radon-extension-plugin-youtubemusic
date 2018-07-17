@@ -33,7 +33,7 @@ export class YouTubeMusicActivityService extends ActivityService {
 
         // Construct activity engine
         this.engine = new ActivityEngine(this.plugin, {
-            fetchMetadata: this.fetchMetadata.bind(this),
+            getMetadata: this.getMetadata.bind(this),
 
             isEnabled: () => true
         });
@@ -52,8 +52,8 @@ export class YouTubeMusicActivityService extends ActivityService {
         });
     }
 
-    fetchMetadata(item) {
-        let albumId = Get(item.album.keys, [Plugin.id, 'id']);
+    getMetadata(item) {
+        let albumId = item.album && Get(item.album.keys, [Plugin.id, 'id']);
 
         if(IsNil(albumId)) {
             return Promise.resolve(item);
@@ -111,13 +111,7 @@ export class YouTubeMusicActivityService extends ActivityService {
 
             // Update item
             item.update(Plugin.id, {
-                keys: {
-                    id: getIdentifier(track.id)
-                },
-
-                // Metadata
-                number: parseInt(track.albumTrackIndex, 10),
-                duration: parseInt(track.lengthMs, 10)
+                number: parseInt(track.albumTrackIndex, 10)
             });
 
             return item;
