@@ -16,22 +16,15 @@ export class PlayerObserver extends Observer {
         super();
 
         // Create debounced `onTrackChanged` function
-        this.onTrackChanged = Debounce(this._onTrackChanged.bind(this), 5 * 1000);
+        this.onTrackChanged = Debounce(this._onTrackChanged.bind(this), 5000);
 
         // Observers
         this.body = null;
 
         this.playerBar = null;
-
-        this.wrapper = null;
         this.controls = null;
 
         this.title = null;
-
-        this.bylineWrapper = null;
-        this.subtitle = null;
-        this.byline = null;
-
         this.bylines = null;
 
         // Private attributes
@@ -50,19 +43,14 @@ export class PlayerObserver extends Observer {
             .onAttributeChanged('player-ui-state_', this.onPlayerVisibilityChanged.bind(this));
 
         // Observe controls
-        this.wrapper = this.observe(this.playerBar, '.control-wrapper');
-        this.controls = this.observe(this.wrapper, '.middle-controls');
+        this.controls = this.observe(this.playerBar, '.control-wrapper .middle-controls');
 
         // Observe title
         this.title = this.observe(this.controls, '.title', { text: true })
             .on('mutation', this.onTrackChanged.bind(this));
 
-        // Observe byline
-        this.bylineWrapper = this.observe(this.controls, '.byline-wrapper');
-        this.subtitle = this.observe(this.bylineWrapper, '.subtitle');
-        this.byline = this.observe(this.subtitle, '.byline');
-
-        this.bylines = this.observe(this.byline, 'a', { text: true })
+        // Observe bylines
+        this.bylines = this.observe(this.controls, '.subtitle .byline a', { text: true })
             .on('mutation', this.onTrackChanged.bind(this));
 
         // Bind to state changed event
@@ -127,27 +115,45 @@ export class PlayerObserver extends Observer {
     }
 
     _onTrackChanged() {
-        let current = this._createTrack(
-            this.title.first(),
-            this.bylines.all()
-        );
+        let $controls = this.controls.first();
 
-        // Ensure track has changed
-        if(IsEqual(this._currentTrack, current)) {
-            return;
-        }
+        // Retrieve state
+        ShimApi.state().then(({ player }) => {
+            Log.debug('Received player state:', player);
 
-        // Store current track
-        let previous = this._currentTrack;
+            // Retrieve video details
+            this._currentVideo = this._getVideoDetails(player);
 
-        // Update current track
-        this._currentTrack = current;
+            if(IsNil(this._currentVideo)) {
+                Log.debug('Unable to retrieve video details (player: %o)', player);
+                return;
+            }
 
-        // Emit "track.changed" event
-        this.emit('track.changed', { previous, current });
+            // Create track
+            let current = this._createTrack(
+                $controls.querySelector('.title'),
+                $controls.querySelectorAll('.subtitle .byline a')
+            );
 
-        // Log track change
-        Log.trace('Track changed to %o', current);
+            Log.trace('Current track: %o', current);
+
+            // Ensure track has changed
+            if(IsEqual(this._currentTrack, current)) {
+                return;
+            }
+
+            // Store current track
+            let previous = this._currentTrack;
+
+            // Update current track
+            this._currentTrack = current;
+
+            // Emit "track.changed" event
+            this.emit('track.changed', { previous, current });
+
+            // Log track change
+            Log.trace('Track changed to %o', current);
+        });
     }
 
     // endregion
@@ -262,9 +268,6 @@ export class PlayerObserver extends Observer {
             return;
         }
 
-        // Reset state
-        this._currentVideo = null;
-
         // Enable progress emitter
         this._progressEmitterEnabled = true;
 
@@ -279,25 +282,8 @@ export class PlayerObserver extends Observer {
             ShimApi.state().then(({ player }) => {
                 Log.debug('Received player state:', player);
 
-                // Retrieve video details
-                let video = this._getVideoDetails(player);
-
-                if(IsNil(video)) {
-                    Log.debug('Unable to retrieve video details (player: %o)', player);
-                    return;
-                }
-
-                // Update video details (if changed)
-                if(!IsEqual(this._currentVideo, video)) {
-                    // Store video details
-                    this._currentVideo = video;
-
-                    // Fire track changed
-                    this.onTrackChanged();
-                } else {
-                    // Emit "progress" event
-                    this.emit('track.progress', player.time * 1000);
-                }
+                // Emit "progress" event
+                this.emit('track.progress', player.time * 1000);
 
                 // Queue next event
                 setTimeout(get, 5 * 1000);
