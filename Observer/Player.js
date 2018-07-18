@@ -30,7 +30,10 @@ export class PlayerObserver extends Observer {
         // Private attributes
         this._currentTrack = null;
         this._currentVideo = null;
+
+        this._progressEmitter = null;
         this._progressEmitterEnabled = false;
+
         this._queueCreated = false;
     }
 
@@ -264,20 +267,14 @@ export class PlayerObserver extends Observer {
     }
 
     _startProgressEmitter() {
-        if(this._progressEmitterEnabled) {
+        if(!IsNil(this._progressEmitter)) {
             return;
         }
 
-        // Enable progress emitter
-        this._progressEmitterEnabled = true;
+        Log.debug('Started progress emitter');
 
         // Construct read method
         let get = () => {
-            if(!this._progressEmitterEnabled) {
-                Log.debug('Stopped progress emitter');
-                return;
-            }
-
             // Retrieve state
             ShimApi.state().then(({ player }) => {
                 Log.debug('Received player state:', player);
@@ -286,17 +283,26 @@ export class PlayerObserver extends Observer {
                 this.emit('track.progress', player.time * 1000);
 
                 // Queue next event
-                setTimeout(get, 5 * 1000);
+                this._progressEmitter = setTimeout(get, 5 * 1000);
             });
         };
 
         // Start reading track progress
-        Log.debug('Started progress emitter');
         get();
     }
 
     _stopProgressEmitter() {
-        this._progressEmitterEnabled = false;
+        if(IsNil(this._progressEmitter)) {
+            return;
+        }
+
+        // Stop progress emitter
+        clearTimeout(this._progressEmitter);
+
+        // Reset state
+        this._progressEmitter = null;
+
+        Log.debug('Stopped progress emitter');
     }
 
     // endregion
