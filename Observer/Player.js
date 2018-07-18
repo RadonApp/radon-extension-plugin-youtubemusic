@@ -252,7 +252,7 @@ export class PlayerObserver extends Observer {
 
         // Build video details
         return {
-            duration: Math.ceil(player.duration * 1000),
+            duration: Math.ceil(player.duration) * 1000,
             id: params.v
         };
     }
