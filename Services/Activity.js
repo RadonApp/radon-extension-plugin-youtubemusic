@@ -98,7 +98,7 @@ export class YouTubeMusicActivityService extends ActivityService {
             let title = this._cleanTitle(item.title);
 
             // Find matching track
-            let track = Find(album.details.tracks, (track) => this._cleanTitle(track.title) === title);
+            let track = this._findTrack(album.details.tracks, title);
 
             if(IsNil(track)) {
                 Log.debug('Unable to find track "%s" (%s) in album: %o', item.title, title, album.tracks);
@@ -144,6 +144,23 @@ export class YouTubeMusicActivityService extends ActivityService {
 
     _cleanTitle(title) {
         return cleanTitle(title).replace(/\s/g, '');
+    }
+
+    _findTrack(tracks, title) {
+        // Find exact match
+        let result = Find(tracks, (track) =>
+            this._cleanTitle(track.title) === title
+        );
+
+        // Return exact match
+        if(!IsNil(result)) {
+            return result;
+        }
+
+        // Find prefix match
+        return Find(tracks, (track) =>
+            this._cleanTitle(track.title).indexOf(title) === 0
+        );
     }
 }
 
