@@ -77,8 +77,6 @@ export class PlayerObserver extends Observer {
         // Emit events
         if(state === 2) {
             this.emit('track.paused');
-        } else {
-            this.emit('track.stopped');
         }
     }
 

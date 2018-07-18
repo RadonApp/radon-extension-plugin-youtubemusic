@@ -22,7 +22,6 @@ export default class PlayerMonitor extends EventEmitter {
         PlayerObserver.on('track.changed',   this.onTrackChanged.bind(this));
         PlayerObserver.on('track.paused',    () => this.emit('paused'));
         PlayerObserver.on('track.progress',  (time) => this.emit('progress', time));
-        PlayerObserver.on('track.stopped',   () => this.emit('stopped'));
     }
 
     start() {
