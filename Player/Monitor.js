@@ -38,7 +38,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Try construct track
         try {
-            track = this._createTrack(current);
+            track = current && this._createTrack(current);
         } catch(e) {
             Log.error('Unable to create track: %s', e.message || e);
         }
