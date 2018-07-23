@@ -1,4 +1,3 @@
-import Find from 'lodash-es/find';
 import Get from 'lodash-es/get';
 import IsNil from 'lodash-es/isNil';
 import {Cache} from 'memory-cache';
@@ -6,7 +5,7 @@ import {Cache} from 'memory-cache';
 import ActivityService, {ActivityEngine} from 'neon-extension-framework/Services/Source/Activity';
 import Registry from 'neon-extension-framework/Core/Registry';
 import {Artist} from 'neon-extension-framework/Models/Metadata/Music';
-import {cleanTitle} from 'neon-extension-framework/Utilities/Metadata';
+import {matchItemByTitle} from 'neon-extension-framework/Utilities/Metadata';
 
 import Api from '../Api';
 import Log from '../Core/Logger';
@@ -94,20 +93,16 @@ export class YouTubeMusicActivityService extends ActivityService {
                 Log.warn('No artist found in album:', album);
             }
 
-            // Clean item title (for matching)
-            let title = this._cleanTitle(item.title);
-
             // Find matching track
-            let track = this._findTrack(album.details.tracks, title);
+            let track = matchItemByTitle(album.details.tracks, item.title);
 
             if(IsNil(track)) {
-                Log.debug('Unable to find track "%s" (%s) in album: %o', item.title, title, album.tracks);
-
-                // Reject promise
                 return Promise.reject(new Error(
                     'Unable to find track "' + item.title + '" in album "' + item.album.title + '"'
                 ));
             }
+
+            Log.trace('Matched "%s" with track: %o', item.title, track);
 
             // Update item
             item.update(Plugin.id, {
@@ -140,27 +135,6 @@ export class YouTubeMusicActivityService extends ActivityService {
             // Return album
             return album;
         });
-    }
-
-    _cleanTitle(title) {
-        return cleanTitle(title).replace(/\s/g, '');
-    }
-
-    _findTrack(tracks, title) {
-        // Find exact match
-        let result = Find(tracks, (track) =>
-            this._cleanTitle(track.title) === title
-        );
-
-        // Return exact match
-        if(!IsNil(result)) {
-            return result;
-        }
-
-        // Find prefix match
-        return Find(tracks, (track) =>
-            this._cleanTitle(track.title).indexOf(title) === 0
-        );
     }
 }
 
