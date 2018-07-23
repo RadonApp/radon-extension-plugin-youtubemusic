@@ -3,7 +3,10 @@ import Debounce from 'lodash-es/debounce';
 import ForEach from 'lodash-es/forEach';
 import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
+import Map from 'lodash-es/map';
 import URI from 'urijs';
+
+import {createArtistTitle, resolveArtists} from 'neon-extension-framework/Utilities/Metadata';
 
 import ShimApi from '../Api/Shim';
 import Log from '../Core/Logger';
@@ -32,7 +35,6 @@ export class PlayerObserver extends Observer {
         this._currentVideo = null;
 
         this._progressEmitter = null;
-        this._progressEmitterEnabled = false;
 
         this._queueCreated = false;
     }
@@ -164,13 +166,13 @@ export class PlayerObserver extends Observer {
     _createTrack($title, $bylines) {
         let title = this._getText($title);
 
-        if(IsNil(title) || IsNil(this._currentVideo)) {
+        if(IsNil(title) || title.length < 1 || IsNil(this._currentVideo)) {
             return null;
         }
 
         // Create children
         let album = null;
-        let artist = null;
+        let artists = [];
 
         ForEach($bylines, ($byline) => {
             let href = $byline.href;
@@ -183,14 +185,26 @@ export class PlayerObserver extends Observer {
 
             // Artist
             if(href.indexOf('browse/') > 0) {
-                artist = artist || this._createArtist($byline);
+                artists.push(this._createArtist($byline));
                 return;
             }
         });
 
-        if(IsNil(artist)) {
+        // Resolve artists (remove duplicate artists)
+        artists = resolveArtists(title, artists);
+
+        // Ensure at least one artist exists
+        if(artists.length < 1) {
             return null;
         }
+
+        // Merge artists
+        let artist = {
+            id: Map(artists, 'id').join(','),
+
+            // Merge artist titles (e.g. 1, 2 & 3)
+            title: createArtistTitle(Map(artists, 'title'))
+        };
 
         // Create track
         return {
@@ -208,28 +222,44 @@ export class PlayerObserver extends Observer {
     _createAlbum($album) {
         let id = this._getId($album);
 
+        // Ensure identifier exists
         if(IsNil(id)) {
             return null;
         }
 
+        // Retrieve title
+        let title = this._getText($album);
+
+        if(IsNil(title) || title.length < 1) {
+            return null;
+        }
+
+        // Build album
         return {
             id,
-
-            title: this._getText($album)
+            title
         };
     }
 
     _createArtist($artist) {
         let id = this._getId($artist);
 
+        // Ensure identifier exists
         if(IsNil(id)) {
             return null;
         }
 
+        // Retrieve title
+        let title = this._getText($artist);
+
+        if(IsNil(title) || title.length < 1) {
+            return null;
+        }
+
+        // Build artist
         return {
             id,
-
-            title: this._getText($artist)
+            title
         };
     }
 
