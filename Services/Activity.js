@@ -73,7 +73,7 @@ export class YouTubeMusicActivityService extends ActivityService {
             });
 
             // Create album artist (if available)
-            if(album.primaryArtists.length > 0) {
+            if(!IsNil(album.primaryArtists) && album.primaryArtists.length > 0) {
                 if(IsNil(item.album.artist)) {
                     item.album.artist = new Artist();
                 }
@@ -85,6 +85,18 @@ export class YouTubeMusicActivityService extends ActivityService {
 
                     // Metadata
                     title: album.primaryArtists[0].name,
+
+                    // Timestamps
+                    fetchedAt
+                });
+            } else if(!IsNil(album.artistDisplayName)) {
+                if(IsNil(item.album.artist)) {
+                    item.album.artist = new Artist();
+                }
+
+                item.album.artist.update(Plugin.id, {
+                    // Metadata
+                    title: album.artistDisplayName,
 
                     // Timestamps
                     fetchedAt
