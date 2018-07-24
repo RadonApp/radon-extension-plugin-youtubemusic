@@ -34,37 +34,64 @@ export default class Interface {
         return this.request('PUT', url, options);
     }
 
-    request(method, url, body) {
+    request(method, url, options) {
         if(!this.shim.injected) {
             return Promise.reject(new Error(
                 'Shim hasn\'t been injected yet'
             ));
         }
 
+        // Set default options
+        options = {
+            authenticated: false,
+
+            body: null,
+            headers: {},
+            params: {},
+
+            ...(options || {})
+        };
+
         // Add URL Base
         if(url.indexOf('://') < 0) {
             url = `${this.constructor.url}/${url}`;
         }
 
-        // Fetch configuration from page
-        return YouTubeMusicShim.configuration().then((config) => {
-            // Add parameters to URL
-            url = URI(url)
-                .addSearch('alt', 'json')
-                .addSearch('key', config['INNERTUBE_API_KEY'])
-                .toString();
+        // Add URL Parameters
+        url = URI(url)
+            .search(options.params)
+            .addSearch('alt', 'json');
 
-            // Include context in body
-            if(!IsNil(body)) {
-                body.context = this._createContext(config);
-            }
+        // Build request
+        return Promise.resolve()
+            // Add authentication details (if enabled)
+            .then(() => {
+                if(!options.authenticated) {
+                    return Promise.resolve();
+                }
 
+                // Retrieve configuration
+                return YouTubeMusicShim.configuration().then((config) => {
+                    // Add key to URL
+                    url.addSearch('key', config['INNERTUBE_API_KEY']);
+
+                    // Update headers
+                    options.headers = {
+                        ...options.headers,
+                        ...this._createHeaders(config)
+                    };
+
+                    // Update body
+                    if(!IsNil(options.body)) {
+                        options.body.context = this._createContext(config);
+                    }
+                });
+            })
             // Send request
-            return this.send(method, url, {
-                headers: this._createHeaders(config),
-                body: !IsNil(body) ? JSON.stringify(body) : null
-            });
-        });
+            .then(() => this.send(method, url.toString(), {
+                headers: options.headers,
+                body: !IsNil(options.body) ? JSON.stringify(options.body) : null
+            }));
     }
 
     send(method, url, options) {
