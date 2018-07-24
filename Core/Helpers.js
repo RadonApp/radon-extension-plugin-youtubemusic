@@ -1,17 +1,16 @@
+/* eslint-disable no-console */
 import IsNil from 'lodash-es/isNil';
 
 import {awaitBody, awaitElements} from 'neon-extension-framework/Document/Await';
 
-import Log from '../Core/Logger';
-
 
 export function awaitPlayer() {
     return new Promise((resolve, reject) => {
-        Log.debug('Waiting for player to load...');
+        console.debug('Waiting for player to load...');
 
         // Display loading warning every 60s
         let loadingInterval = setInterval(() => {
-            Log.warn('Waiting for player to load...');
+            console.warn('Waiting for player to load...');
         }, 60 * 1000);
 
         // Wait for page to load
@@ -19,7 +18,7 @@ export function awaitPlayer() {
             document.body,
             '#movie_player'
         )).then((element) => {
-            Log.info('Player loaded');
+            console.info('Player loaded');
 
             // Cancel loading warning
             clearInterval(loadingInterval);
