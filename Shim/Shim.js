@@ -60,25 +60,34 @@ export default class Shim {
         // Private attributes
         this._player = null;
 
+        // Wait for player to load
+        awaitPlayer().then(this.onPlayerLoaded.bind(this));
+    }
+
+    // region Event Handlers
+
+    onPlayerLoaded(player) {
+        this._player = player;
+
         // Emit "configuration" event
         this.configuration();
 
-        // Wait for player to load
-        awaitPlayer().then((player) => {
-            this._player = player;
+        // Emit initial state
+        this._emit('player.state', player.getPlayerState());
 
-            // Emit initial state
-            this._emit('player.state', player.getPlayerState());
-
-            // Emit player changes
-            player.addEventListener('onStateChange', (state) =>
-                this._emit('player.state', state)
-            );
-        });
+        // Emit player changes
+        player.addEventListener('onStateChange', (state) =>
+            this._emit('player.state', state)
+        );
     }
+
+    // endregion
+
+    // region Public Methods
 
     configuration() {
         if(IsNil(window) || IsNil(window['yt'])) {
+            console.warn('Unable to find configuration in "window.yt"');
             return;
         }
 
@@ -98,7 +107,9 @@ export default class Shim {
         });
     }
 
-    // region Private methods
+    // endregion
+
+    // region Private Methods
 
     _emit(type, ...args) {
         // Construct event
