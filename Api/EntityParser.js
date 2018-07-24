@@ -1,4 +1,6 @@
 /* eslint-disable key-spacing */
+/* globals cloneInto */
+import Browser from 'wes/core/environment';
 import Find from 'lodash-es/find';
 import ForEach from 'lodash-es/forEach';
 import Get from 'lodash-es/get';
@@ -45,16 +47,20 @@ export const EntityStructure = {
 
 export class EntityParser {
     parse(type, payloads) {
+        if(IsNil(payloads) || payloads.length < 1) {
+            return null;
+        }
+
+        // Find item structure
         let structure = EntityStructure[type];
 
-        // Ensure item structure exists
         if(IsNil(structure)) {
             throw new Error(`Unsupported type: "${type}"`);
         }
 
+        // Parse entity
         let item = null;
 
-        // Parse payloads
         ForEach(payloads, (payload) => {
             let target = item;
 
@@ -101,33 +107,42 @@ export class EntityParser {
             }
 
             // Retrieve identifier from path
-            let value = Get(target, path);
+            let current = Get(target, path);
 
-            if(IsNil(value)) {
+            if(IsNil(current)) {
                 Log.warn(`No identifier found at "${path}", ignoring payload:`, payload);
                 return;
             }
 
             // Process child
-            if(Array.isArray(value)) {
-                Set(target, path, Map(value, (id) => {
+            let value = data;
+
+            if(Array.isArray(current)) {
+                value = Map(current, (id) => {
                     if(data.id === id) {
                         return data;
                     }
 
                     return id;
-                }));
-            } else {
-                if(data.id !== value) {
-                    throw new Error(`Invalid item (expected "${value}", found "${data.id}")`);
-                }
-
-                // Update value
-                Set(target, path, data);
+                });
+            } else if(data.id !== current) {
+                throw new Error(`Invalid item (expected "${current}", found "${data.id}")`);
             }
+
+            // Update value
+            Set(target, path, this._cloneIntoContext(value, target));
         });
 
         return item;
+    }
+
+    // TODO Move to framework
+    _cloneIntoContext(value, parent) {
+        if(Browser.name === 'firefox') {
+            return cloneInto(value, parent);
+        }
+
+        return value;
     }
 
     _parsePayload(structure, payload) {
