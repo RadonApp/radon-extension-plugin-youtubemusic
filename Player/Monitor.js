@@ -47,7 +47,11 @@ export default class PlayerMonitor extends EventEmitter {
         if(IsNil(track)) {
             Log.warn('Unable to parse track: %o', current);
 
+            // Clear current identifier
             this._currentItem = null;
+
+            // Emit "stopped" event
+            this.emit('stopped');
             return;
         }
 
