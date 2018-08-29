@@ -3,7 +3,7 @@ node_js:
 - '7'
 before_install:
 - npm install -g npm@'^5.10.0'
-- npm install -g NeApp/neon-extension-build#$TRAVIS_BRANCH || npm install -g NeApp/neon-extension-build#develop
+- npm install -g RadonApp/radon-extension-build#$TRAVIS_BRANCH || npm install -g RadonApp/radon-extension-build#develop
 install:
 - neb travis:install $TRAVIS_BRANCH
 - neb package:validate
@@ -21,5 +21,5 @@ deploy:
   api_key:
     secure: g+D7VnOrLAakL0MFKrGUuRlN6S8FiXErXNLxlmi0nVg2hALQBqSIDW1hvh52CcNYhUEOl7raS6Z9xBI2cgs1hkjN2k9ILZk0cbUqZBgZ8nfNyzLy47oaGZJ1kk9/MKyLA3GtV6GSSNxEm41gchS1qurmJVuv9oyaHdh8SF+yzMrQH/hE27jfaWYOTPQ6nztdHs5iFQZkBt02/GDsIwcY548ZtRivtYfRch7ibbjERe9UgPWoMBk3IEljvKvk+ahlNVS1/Ab7JdJEx79eTxQEJeKDMHDCidPrnoj0KvaYHi19trFqja2cqH2v4dXaFRLXWPfA7BMQb1zQIQWDfc6tFiHzh7l/vTPdY2548Ulik19jxTGkJfeOlrJJ3SFP/FsbYYk2FOINKQT0Vr6/vDl/7sZLPgP3IadflKcNslFBhm88+72zrk1wRQmVfX9q5Weh4AoSUV3xNb1WhD01lJsAN8R8rFz7avfIt8P8aeIk51a8YhKA/bu32cYom2K9QE6tiTSrLpbKX9FdYbMvaMPHoPe9SvSZhJNMzruZw4C3grIQE2DfqT2lV5QX5fRJIctq+CfBYZMjZNjukz/1nNO4rvcp8wmVfqc+r8UP0r26qNkI3cmCtJPFa8swvjPNM5AyHrovqmD3HP6RPxdUDU2yXh32bKSE8SxRucJ9LV1BUYM=
   on:
-    repo: NeApp/neon-extension-source-youtubemusic
+    repo: RadonApp/radon-extension-plugin-youtubemusic
     tags: true

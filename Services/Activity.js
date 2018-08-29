@@ -2,10 +2,10 @@ import Get from 'lodash-es/get';
 import IsNil from 'lodash-es/isNil';
 import {Cache} from 'memory-cache';
 
-import ActivityService, {ActivityEngine} from 'neon-extension-framework/Services/Source/Activity';
-import Registry from 'neon-extension-framework/Core/Registry';
-import {Artist} from 'neon-extension-framework/Models/Metadata/Music';
-import {matchItemByTitle} from 'neon-extension-framework/Utilities/Metadata';
+import ActivityService, {ActivityEngine} from '@radon-extension/framework/Services/Source/Activity';
+import Registry from '@radon-extension/framework/Core/Registry';
+import {Artist} from '@radon-extension/framework/Models/Metadata/Music';
+import {matchItemByTitle} from '@radon-extension/framework/Utilities/Metadata';
 
 import Api from '../Api';
 import Log from '../Core/Logger';

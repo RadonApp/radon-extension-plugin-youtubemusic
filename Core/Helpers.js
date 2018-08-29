@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import IsNil from 'lodash-es/isNil';
 
-import {awaitBody, awaitElements} from 'neon-extension-framework/Document/Await';
+import {awaitBody, awaitElements} from '@radon-extension/framework/Document/Await';
 
 
 export function awaitPlayer() {

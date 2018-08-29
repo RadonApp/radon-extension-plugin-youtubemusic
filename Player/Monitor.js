@@ -2,7 +2,7 @@
 import EventEmitter from 'eventemitter3';
 import IsNil from 'lodash-es/isNil';
 
-import {Artist, Album, Track} from 'neon-extension-framework/Models/Metadata/Music';
+import {Artist, Album, Track} from '@radon-extension/framework/Models/Metadata/Music';
 
 import Log from '../Core/Logger';
 import Plugin from '../Core/Plugin';

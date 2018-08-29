@@ -1,5 +1,5 @@
 # Radon Extension: YouTube Music
 
-[![](https://img.shields.io/travis/NeApp/neon-extension-source-youtubemusic/master.svg)](https://travis-ci.org/NeApp/neon-extension-source-youtubemusic) [![](https://img.shields.io/coveralls/github/NeApp/neon-extension-source-youtubemusic/master.svg)](https://coveralls.io/github/NeApp/neon-extension-source-youtubemusic) ![](https://img.shields.io/github/license/NeApp/neon-extension-source-youtubemusic.svg)
+[![](https://img.shields.io/travis/RadonApp/radon-extension-plugin-youtubemusic/master.svg)](https://travis-ci.org/RadonApp/radon-extension-plugin-youtubemusic) [![](https://img.shields.io/coveralls/github/RadonApp/radon-extension-plugin-youtubemusic/master.svg)](https://coveralls.io/github/RadonApp/radon-extension-plugin-youtubemusic) ![](https://img.shields.io/github/license/RadonApp/radon-extension-plugin-youtubemusic.svg)
 
-[Radon Extension](https://github.com/NeApp/neon-extension) Source for YouTube Music.
+[Radon Extension](https://github.com/RadonApp/radon-extension) Source for YouTube Music.

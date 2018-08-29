@@ -6,7 +6,7 @@ import IsNil from 'lodash-es/isNil';
 import Map from 'lodash-es/map';
 import URI from 'urijs';
 
-import {createArtistTitle, resolveArtists} from 'neon-extension-framework/Utilities/Metadata';
+import {createArtistTitle, resolveArtists} from '@radon-extension/framework/Utilities/Metadata';
 
 import ShimApi from '../Api/Shim';
 import Log from '../Core/Logger';
