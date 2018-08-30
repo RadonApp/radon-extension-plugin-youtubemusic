@@ -171,7 +171,7 @@ export class YouTubeMusicShim extends EventEmitter {
     _inject() {
         // Wait until body is available
         return awaitBody().then(() => {
-            let script = createScript(document, Runtime.getURL('/Modules/neon-extension-source-youtubemusic/Shim.js'));
+            let script = createScript(document, Runtime.getURL('/Plugins/youtubemusic/Shim.js'));
 
             // Create events interface
             this._events = new YouTubeMusicShimEvents();

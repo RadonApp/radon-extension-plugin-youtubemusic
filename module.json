@@ -15,8 +15,8 @@
 
       "js": [
         "Common.js",
-        "Modules/Common.js",
-        "Modules/neon-extension-source-youtubemusic/Main.js"
+        "Plugins/Common.js",
+        "Plugins/youtubemusic/Main.js"
       ]
     }
   ],
@@ -29,7 +29,7 @@
     "Source:Activity"
   ],
   "web_accessible_resources": [
-    "Modules/neon-extension-source-youtubemusic/Shim.js"
+    "Plugins/youtubemusic/Shim.js"
   ],
 
   "webpack": {
