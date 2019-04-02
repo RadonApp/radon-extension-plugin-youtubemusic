@@ -48,7 +48,7 @@ export class PlayerObserver extends Observer {
             .onAttributeChanged('player-ui-state_', this.onPlayerVisibilityChanged.bind(this));
 
         // Observe controls
-        this.controls = this.observe(this.playerBar, '.control-wrapper .middle-controls');
+        this.controls = this.observe(this.playerBar, '.middle-controls');
 
         // Observe title
         this.title = this.observe(this.controls, '.title', { text: true })
