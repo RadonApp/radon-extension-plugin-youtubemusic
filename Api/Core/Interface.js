@@ -8,7 +8,7 @@ import YouTubeMusicShim from '../Shim';
 
 
 export default class Interface {
-    static url = 'https://music.youtube.com/youtubei/v1/music';
+    static url = 'https://music.youtube.com/youtubei/v1';
 
     constructor() {
         this.interfaces = {};

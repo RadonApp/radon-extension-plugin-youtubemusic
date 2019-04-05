@@ -14,14 +14,14 @@ import Log from '../Core/Logger';
 
 
 export const EntityTypes = {
-    AlbumRelease: 'albumRelease',
-    AlbumReleaseDetail: 'albumReleaseDetail',
-    AlbumReleaseUserDetail: 'albumReleaseUserDetail',
+    AlbumRelease:               'musicAlbumRelease',
+    AlbumReleaseDetail:         'musicAlbumReleaseDetail',
+    AlbumReleaseUserDetail:     'musicAlbumReleaseUserDetail',
 
-    Artist: 'artist',
+    Artist:                     'musicArtist',
 
-    Track: 'track',
-    TrackUserDetail: 'trackUserDetail'
+    Track:                      'musicTrack',
+    TrackUserDetail:            'musicTrackUserDetail'
 };
 
 export const EntityStructure = {
@@ -46,8 +46,8 @@ export const EntityStructure = {
 };
 
 export class EntityParser {
-    parse(type, payloads) {
-        if(IsNil(payloads) || payloads.length < 1) {
+    parse(type, mutations) {
+        if(IsNil(mutations) || mutations.length < 1) {
             return null;
         }
 
@@ -61,14 +61,14 @@ export class EntityParser {
         // Parse entity
         let item = null;
 
-        ForEach(payloads, (payload) => {
+        ForEach(mutations, (mutation) => {
             let target = item;
 
-            // Parse payload
-            let { parent, path, match, data } = this._parsePayload(structure, payload);
+            // Parse mutation
+            let { parent, path, match, data } = this._parseMutation(structure, mutation);
 
             if(IsUndefined(path)) {
-                Log.warn('Ignoring unsupported payload:', payload);
+                Log.warn('Ignoring unsupported mutation:', mutation);
                 return;
             }
 
@@ -110,7 +110,7 @@ export class EntityParser {
             let current = Get(target, path);
 
             if(IsNil(current)) {
-                Log.warn(`No identifier found at "${path}", ignoring payload:`, payload);
+                Log.warn(`No identifier found at "${path}", ignoring mutation:`, mutation);
                 return;
             }
 
@@ -145,11 +145,11 @@ export class EntityParser {
         return value;
     }
 
-    _parsePayload(structure, payload) {
+    _parseMutation(structure, { payload }) {
         let keys = Object.keys(payload);
 
         if(keys.length < 1) {
-            throw new Error('Invalid payload');
+            throw new Error('Invalid mutation');
         }
 
         let result = structure[keys[0]];

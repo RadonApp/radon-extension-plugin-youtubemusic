@@ -138,9 +138,7 @@ export class YouTubeMusicActivityService extends ActivityService {
         }
 
         // Fetch album
-        return Api.entity.browse({
-            musicAlbumReleaseEntity: `ALBUM_RELEASE/${albumId}`
-        }).then((album) => {
+        return Api.entity.fetchAlbum(albumId).then((album) => {
             // Store album in cache (which is automatically removed in `AlbumCacheExpiry`)
             this.albums.put(albumId, album, AlbumCacheExpiry);
 

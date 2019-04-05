@@ -1,24 +1,22 @@
-import IsNil from 'lodash-es/isNil';
-
 import Interface from './Core/Interface';
 import EntityParser, {EntityTypes} from './EntityParser';
 
 
 export default class EntityInterface extends Interface {
-    browse(entityId) {
-        return this.post('entity_browse', {
+    fetchAlbum(albumId) {
+        return this.post('browse', {
             authenticated: true,
 
             body: {
-                pageId: 'DETAIL',
-                entityId
+                browseEndpointContextSupportedConfigs: {
+                    browseEndpointContextMusicConfig: {
+                        pageType: 'MUSIC_PAGE_TYPE_ALBUM'
+                    }
+                },
+                browseId: albumId
             }
-        }).then(({ payload: { payloads } }) => {
-            if(!IsNil(entityId.musicAlbumReleaseEntity)) {
-                return EntityParser.parse(EntityTypes.AlbumRelease, payloads);
-            }
-
-            throw new Error('Unknown entity type');
+        }).then(({ frameworkUpdates: { entityBatchUpdate: { mutations } } }) => {
+            return EntityParser.parse(EntityTypes.AlbumRelease, mutations);
         });
     }
 }
