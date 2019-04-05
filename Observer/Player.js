@@ -135,7 +135,7 @@ export class PlayerObserver extends Observer {
             // Create track
             let current = this._createTrack(
                 $controls.querySelector('.title'),
-                $controls.querySelectorAll('.subtitle .byline a')
+                $controls.querySelector('.subtitle .byline')
             );
 
             Log.trace('Current track: %o', current);
@@ -173,19 +173,24 @@ export class PlayerObserver extends Observer {
         // Create children
         let album = null;
         let artists = [];
+        let type = 0;
 
-        ForEach($bylines, ($byline) => {
-            let href = $byline.href;
+        ForEach($bylines.childNodes, ($byline) => {
+            if($byline.textContent.indexOf('•') >= 0) {
+                type++;
+            }
 
-            // Album
-            if(href.indexOf('album/ALBUM_RELEASE/') > 0) {
-                album = album || this._createAlbum($byline);
+            if($byline.nodeName !== 'A') {
                 return;
             }
 
-            // Artist
-            if(href.indexOf('browse/') > 0) {
+            if(type === 0) {
                 artists.push(this._createArtist($byline));
+                return;
+            }
+
+            if(type === 1) {
+                album = album || this._createAlbum($byline);
                 return;
             }
         });
