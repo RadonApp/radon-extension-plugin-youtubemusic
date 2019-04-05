@@ -32,6 +32,7 @@ export class PlayerObserver extends Observer {
 
         // Private attributes
         this._currentTrack = null;
+        this._currentTrackId = null;
         this._currentVideo = null;
 
         this._progressEmitter = null;
@@ -122,7 +123,7 @@ export class PlayerObserver extends Observer {
 
         // Retrieve state
         ShimApi.state().then(({ player }) => {
-            Log.debug('Received player state:', player);
+            Log.debug('(Track Changed) Received player state:', player);
 
             // Retrieve video details
             this._currentVideo = this._getVideoDetails(player);
@@ -150,6 +151,7 @@ export class PlayerObserver extends Observer {
 
             // Update current track
             this._currentTrack = current;
+            this._currentTrackId = this._currentVideo.id;
 
             // Emit "track.changed" event
             this.emit('track.changed', { previous, current });
@@ -310,10 +312,17 @@ export class PlayerObserver extends Observer {
         let get = () => {
             // Retrieve state
             ShimApi.state().then(({ player }) => {
-                Log.debug('Received player state:', player);
+                Log.debug('(Progress) Received player state:', player);
+
+                // Retrieve video details
+                let details = this._getVideoDetails(player);
 
                 // Emit "progress" event
-                this.emit('track.progress', player.time * 1000);
+                if(details && details.id === this._currentTrackId) {
+                    this.emit('track.progress', player.time * 1000);
+                } else {
+                    Log.debug('(Progress) Ignoring progress event for unknown track');
+                }
 
                 // Queue next event
                 this._progressEmitter = setTimeout(get, 5 * 1000);
