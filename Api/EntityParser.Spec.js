@@ -6,68 +6,80 @@ describe('EntityParser', () => {
         it('should parse album release', () => {
             expect(EntityParser.parse(EntityTypes.AlbumRelease, [
                 {
-                    'albumRelease': {
-                        'id': 'ALBUM_RELEASE',
-                        'title': 'Humility',
+                    'payload': {
+                        'musicAlbumRelease': {
+                            'id': 'ALBUM_RELEASE',
+                            'title': 'Humility',
 
-                        'artistDisplayName': 'Gorillaz & George Benson',
-                        'durationMs': '197933',
-                        'releaseDate': { 'year': 2018, 'month': 5, 'day': 31 },
-                        'releaseType': 'MUSIC_RELEASE_TYPE_SINGLE',
-                        'trackCount': '1',
+                            'artistDisplayName': 'Gorillaz & George Benson',
+                            'durationMs': '197933',
+                            'releaseDate': { 'year': 2018, 'month': 5, 'day': 31 },
+                            'releaseType': 'MUSIC_RELEASE_TYPE_SINGLE',
+                            'trackCount': '1',
 
-                        'primaryArtists': [ 'ARTIST' ],
+                            'primaryArtists': [ 'ARTIST' ],
 
-                        'details': 'ALBUM_RELEASE_DETAIL',
-                        'userDetails': 'ALBUM_RELEASE_USER_DETAIL'
+                            'details': 'ALBUM_RELEASE_DETAIL',
+                            'userDetails': 'ALBUM_RELEASE_USER_DETAIL'
+                        }
                     }
                 },
                 {
-                    'albumReleaseDetail': {
-                        'id': 'ALBUM_RELEASE_DETAIL',
+                    'payload': {
+                        'musicAlbumReleaseDetail': {
+                            'id': 'ALBUM_RELEASE_DETAIL',
 
-                        'tracks': [
-                            'TRACK'
-                        ]
+                            'tracks': [
+                                'TRACK'
+                            ]
+                        }
                     }
                 },
                 {
-                    'albumReleaseUserDetail': {
-                        'id': 'ALBUM_RELEASE_USER_DETAIL',
-                        'inLibrary': true,
+                    'payload': {
+                        'musicAlbumReleaseUserDetail': {
+                            'id': 'ALBUM_RELEASE_USER_DETAIL',
+                            'inLibrary': true,
 
-                        'albumRelease': 'ALBUM_RELEASE'
+                            'albumRelease': 'ALBUM_RELEASE'
+                        }
                     }
                 },
                 {
-                    'artist': {
-                        'id': 'ARTIST',
-                        'name': 'Gorillaz',
+                    'payload': {
+                        'musicArtist': {
+                            'id': 'ARTIST',
+                            'name': 'Gorillaz',
 
-                        'details': 'ARTIST_DETAIL',
-                        'userDetails': 'ARTIST_USER_DETAIL'
+                            'details': 'ARTIST_DETAIL',
+                            'userDetails': 'ARTIST_USER_DETAIL'
+                        }
                     }
                 },
                 {
-                    'track': {
-                        'id': 'TRACK',
-                        'title': 'Humility (feat. George Benson)',
+                    'payload': {
+                        'musicTrack': {
+                            'id': 'TRACK',
+                            'title': 'Humility (feat. George Benson)',
 
-                        'albumTrackIndex': '1',
-                        'artistNames': 'Gorillaz',
-                        'lengthMs': '197933',
+                            'albumTrackIndex': '1',
+                            'artistNames': 'Gorillaz',
+                            'lengthMs': '197933',
 
-                        'albumRelease': 'ALBUM_RELEASE',
-                        'userDetails': 'TRACK_USER_DETAIL',
-                        'details': 'TRACK_DETAIL'
+                            'albumRelease': 'ALBUM_RELEASE',
+                            'userDetails': 'TRACK_USER_DETAIL',
+                            'details': 'TRACK_DETAIL'
+                        }
                     }
                 },
                 {
-                    'trackUserDetail': {
-                        'id': 'TRACK_USER_DETAIL',
-                        'likeState': 'MUSIC_ENTITY_LIKE_STATE_LIKED',
+                    'payload': {
+                        'musicTrackUserDetail': {
+                            'id': 'TRACK_USER_DETAIL',
+                            'likeState': 'MUSIC_ENTITY_LIKE_STATE_LIKED',
 
-                        'parentTrack': 'TRACK'
+                            'parentTrack': 'TRACK'
+                        }
                     }
                 }
             ])).toEqual({
