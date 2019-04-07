@@ -19,7 +19,7 @@ export class PlayerObserver extends Observer {
         super();
 
         // Create debounced `onTrackChanged` function
-        this.onTrackChanged = Debounce(this._onTrackChanged.bind(this), 5000);
+        this._onTrackChangedDebounced = Debounce(this._onTrackChanged.bind(this), 5000);
 
         // Observers
         this.body = null;
@@ -32,10 +32,12 @@ export class PlayerObserver extends Observer {
 
         // Private attributes
         this._currentTrack = null;
-        this._currentTrackId = null;
         this._currentVideo = null;
 
         this._progressEmitter = null;
+
+        this._progressPaused = false;
+        this._progressPausedTimeout = null;
 
         this._queueCreated = false;
     }
@@ -94,6 +96,23 @@ export class PlayerObserver extends Observer {
         }
     }
 
+    onTrackChanged() {
+        // Cancel existing timeout
+        if(!IsNil(this._progressPausedTimeout)) {
+            clearTimeout(this._progressPausedTimeout);
+        }
+
+        // Pause progress events
+        if(!this._progressPaused) {
+            this._progressPaused = true;
+
+            Log.trace('Paused progress events');
+        }
+
+        // Emit track change
+        this._onTrackChangedDebounced();
+    }
+
     _onQueueCreated() {
         if(this._queueCreated) {
             return;
@@ -123,7 +142,7 @@ export class PlayerObserver extends Observer {
 
         // Retrieve state
         ShimApi.state().then(({ player }) => {
-            Log.debug('(Track Changed) Received player state:', player);
+            Log.trace('(Track Changed) Received player state:', player);
 
             // Retrieve video details
             this._currentVideo = this._getVideoDetails(player);
@@ -151,13 +170,22 @@ export class PlayerObserver extends Observer {
 
             // Update current track
             this._currentTrack = current;
-            this._currentTrackId = this._currentVideo.id;
 
             // Emit "track.changed" event
             this.emit('track.changed', { previous, current });
 
             // Log track change
             Log.trace('Track changed to %o', current);
+
+            // Start progress emitter
+            this._startProgressEmitter();
+
+            // Start progress events in 10 seconds
+            this._progressPausedTimeout = setTimeout(() => {
+                this._progressPaused = false;
+
+                Log.trace('Started progress events');
+            }, 10 * 1000);
         });
     }
 
@@ -301,36 +329,44 @@ export class PlayerObserver extends Observer {
         };
     }
 
-    _startProgressEmitter() {
-        if(!IsNil(this._progressEmitter)) {
+    _emitProgress() {
+        if(this._progressPaused) {
+            Log.debug('(Progress) Track changing, waiting for next event');
+
+            // Queue next event
+            this._progressEmitter = setTimeout(this._emitProgress.bind(this), 5 * 1000);
             return;
         }
 
-        Log.debug('Started progress emitter');
+        // Retrieve state
+        ShimApi.state().then(({ player }) => {
+            Log.trace('(Progress) Received player state:', player);
 
-        // Construct read method
-        let get = () => {
-            // Retrieve state
-            ShimApi.state().then(({ player }) => {
-                Log.debug('(Progress) Received player state:', player);
+            // Emit "progress" event
+            this.emit('track.progress', player.time * 1000);
 
-                // Retrieve video details
-                let details = this._getVideoDetails(player);
+            // Queue next event
+            this._progressEmitter = setTimeout(this._emitProgress.bind(this), 5 * 1000);
+        });
+    }
 
-                // Emit "progress" event
-                if(details && details.id === this._currentTrackId) {
-                    this.emit('track.progress', player.time * 1000);
-                } else {
-                    Log.debug('(Progress) Ignoring progress event for unknown track');
-                }
+    _startProgressEmitter() {
+        let running = !IsNil(this._progressEmitter);
 
-                // Queue next event
-                this._progressEmitter = setTimeout(get, 5 * 1000);
-            });
-        };
+        // Stop progress emitter
+        if(running) {
+            clearTimeout(this._progressEmitter);
+        }
 
-        // Start reading track progress
-        get();
+        // Start progress emitter
+        this._progressEmitter = setTimeout(this._emitProgress.bind(this), 5 * 1000);
+
+        // Log state
+        if(running) {
+            Log.trace('Restarted progress emitter');
+        } else {
+            Log.trace('Started progress emitter');
+        }
     }
 
     _stopProgressEmitter() {
@@ -344,7 +380,7 @@ export class PlayerObserver extends Observer {
         // Reset state
         this._progressEmitter = null;
 
-        Log.debug('Stopped progress emitter');
+        Log.trace('Stopped progress emitter');
     }
 
     // endregion
