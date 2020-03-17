@@ -6,7 +6,7 @@ import ForEach from 'lodash-es/forEach';
 import Get from 'lodash-es/get';
 import IsUndefined from 'lodash-es/isUndefined';
 import IsNil from 'lodash-es/isNil';
-import IsString from 'lodash-es/isString';
+import IsPlainObject from 'lodash-es/isPlainObject';
 import Map from 'lodash-es/map';
 import Set from 'lodash-es/set';
 
@@ -154,13 +154,12 @@ export class EntityParser {
 
         let result = structure[keys[0]];
 
-        if(IsString(result)) {
+        if(!IsPlainObject(result)) {
             result = { path: result };
         }
 
         return {
             parent: null,
-            path: null,
             match: null,
 
             ...result,
