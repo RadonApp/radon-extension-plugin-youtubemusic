@@ -161,7 +161,7 @@ export class PlayerObserver extends Observer {
             Log.trace('Current track: %o', current);
 
             // Ensure track has changed
-            if(IsEqual(this._currentTrack, current)) {
+            if(current && IsEqual(this._currentTrack, current)) {
                 return;
             }
 
