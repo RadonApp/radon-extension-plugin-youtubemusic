@@ -45,7 +45,7 @@ export default class PlayerMonitor extends EventEmitter {
 
         // Ensure track exists
         if(IsNil(track)) {
-            Log.warn('Unable to parse track: %o', current);
+            Log.warn('No track available');
 
             // Clear current identifier
             this._currentItem = null;

@@ -196,7 +196,13 @@ export class PlayerObserver extends Observer {
     _createTrack($title, $bylines) {
         let title = this._getText($title);
 
-        if(IsNil(title) || title.length < 1 || IsNil(this._currentVideo)) {
+        if(IsNil(title) || title.length < 1) {
+            Log.warn('Unable to parse track (invalid title)');
+            return null;
+        }
+
+        if(IsNil(this._currentVideo)) {
+            Log.warn('Unable to parse track (no video)');
             return null;
         }
 
@@ -230,6 +236,7 @@ export class PlayerObserver extends Observer {
 
         // Ensure at least one artist exists
         if(artists.length < 1) {
+            Log.warn('Unable to parse track (no artists)');
             return null;
         }
 
@@ -259,6 +266,7 @@ export class PlayerObserver extends Observer {
 
         // Ensure identifier exists
         if(IsNil(id)) {
+            Log.warn('Unable to parse album (invalid id)');
             return null;
         }
 
@@ -266,6 +274,7 @@ export class PlayerObserver extends Observer {
         let title = this._getText($album);
 
         if(IsNil(title) || title.length < 1) {
+            Log.warn('Unable to parse album (invalid title)');
             return null;
         }
 
@@ -281,6 +290,7 @@ export class PlayerObserver extends Observer {
 
         // Ensure identifier exists
         if(IsNil(id)) {
+            Log.warn('Unable to parse artist (invalid id)');
             return null;
         }
 
@@ -288,6 +298,7 @@ export class PlayerObserver extends Observer {
         let title = this._getText($artist);
 
         if(IsNil(title) || title.length < 1) {
+            Log.warn('Unable to parse artist (invalid title)');
             return null;
         }
 
@@ -331,7 +342,7 @@ export class PlayerObserver extends Observer {
 
     _emitProgress() {
         if(this._progressPaused) {
-            Log.debug('(Progress) Track changing, waiting for next event');
+            Log.trace('(Progress) Emitter Paused');
 
             // Queue next event
             this._progressEmitter = setTimeout(this._emitProgress.bind(this), 5 * 1000);
