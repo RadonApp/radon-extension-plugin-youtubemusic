@@ -1,6 +1,7 @@
 /* eslint-disable no-multi-spaces, key-spacing */
 import Debounce from 'lodash-es/debounce';
 import ForEach from 'lodash-es/forEach';
+import Get from 'lodash-es/get';
 import IsEqual from 'lodash-es/isEqual';
 import IsNil from 'lodash-es/isNil';
 import Map from 'lodash-es/map';
@@ -333,9 +334,16 @@ export class PlayerObserver extends Observer {
             return null;
         }
 
+        // Retrieve duration
+        let duration = parseInt(Get(player, 'response.videoDetails.lengthSeconds'), 10);
+
+        if(!duration) {
+            return null;
+        }
+
         // Build video details
         return {
-            duration: Math.ceil(player.duration) * 1000,
+            duration: duration * 1000,
             id: params.v
         };
     }

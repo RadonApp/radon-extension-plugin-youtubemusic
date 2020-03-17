@@ -100,6 +100,7 @@ export default class Shim {
         this._emit('state', {
             player: this._player && {
                 duration: this._player.getDuration(),
+                response: this._player.getPlayerResponse(),
                 state: this._player.getPlayerState(),
                 time: this._player.getCurrentTime(),
                 url: this._player.getVideoUrl()
